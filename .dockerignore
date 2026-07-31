@@ -12,4 +12,3 @@ tests/
 docs/
 *.md
 Dockerfile
-docker-compose.yml

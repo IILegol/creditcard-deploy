@@ -1,0 +1,95 @@
+Credit Card Default Prediction API
+
+Описание проекта
+
+Сервис машинного обучения для прогнозирования дефолта по кредитным картам. Покрывает полный цикл от 
+обучения модели до деплоя через REST API с возможностью A/B-тестирования новых версий.
+
+Цели проекта:
+разработать и внедрить в production-like-среду сервис машинного обучения для прогнозирования 
+дефолта по кредитным картам, который охватывает полный цикл от сохранения модели до организации A/B-тестирования.
+
+Структура репозитория:
+app/ - Flask-приложение (API)
+data/ - исходные и обработанные данные
+docs/ - документация (развертывание, архитектура, план A/B-теста)
+models/ - сохраненные модели (.pkl)
+screenshot/ - скриншоты работы API
+src/ - скрипты обучения модели и утилиты
+test_API/ - файл с данными для тестирорвания API
+.gitignore - исключения для Git
+.dockerignore - исключения для сборки Docker-образа
+Dockerfile - конфигурация сборки образа
+requirements.txt - зависимости Python
+
+
+
+Запуск локально
+
+Установка зависимостей:
+pip install -r requirements.txt
+
+Обучение модели:
+python src/train.py
+
+Запуск API:
+python app/app.py
+
+Проверка работоспособности:
+curl http://localhost:5000/health
+
+Запуск в Docker
+Сборка образа:
+docker build -t creditcard-api .
+
+Запуск контейнера:
+docker run -p 5000:5000 creditcard-api
+
+Примеры запросов к API
+
+Health check:
+curl http://localhost:5000/health
+
+Предсказание дефолта:
+
+Создай файл test_request.json в папке проекта с содержанием:
+{
+"features": [20000, 2, 2, 1, 30, 0, 0, 0, 0, 0, 0, 20000, 18000, 15000, 12000, 10000, 8000, 5000, 4000, 3000, 2000, 1000, 500]
+}
+
+Windows (PowerShell):
+curl.exe --% -X POST http://localhost:5000/predict -H "Content-Type: application/json" -d @test_request.json
+
+Linux / macOS:
+curl -X POST http://localhost:5000/predict -H "Content-Type: application/json" -d @test_request.json
+
+Формат запроса и ответа
+Эндпоинт: POST /predict
+Content-Type: application/json
+
+Тело запроса: JSON с полем "features", содержащим массив из 23 чисел в порядке колонок датасета:
+LIMIT_BAL, SEX, EDUCATION, MARRIAGE, AGE, PAY_0, PAY_2, PAY_3, PAY_4, PAY_5, PAY_6, BILL_AMT1, BILL_AMT2, BILL_AMT3, BILL_AMT4, BILL_AMT5, BILL_AMT6, PAY_AMT1, PAY_AMT2, PAY_AMT3, PAY_AMT4, PAY_AMT5, PAY_AMT6
+
+Пример ответа:
+{
+"prediction": 0,
+"probability": 0.15,
+"class": "no default"
+}
+
+Поля ответа:
+prediction - прогноз (0: не дефолт, 1: дефолт)
+probability - вероятность предсказанного класса (от 0.0 до 1.0)
+class - текстовая расшифровка ("no default" / "default")
+
+Эндпоинт: GET /health
+
+Ответ:
+{
+"status": "healthy",
+"model_loaded": true
+}
+
+Готовый образ доступен для скачивания:
+docker push iilegol/creditcard-api:latest
+(https://hub.docker.com/repository/docker/iilegol/creditcard-api/general)
